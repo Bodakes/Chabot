@@ -11,10 +11,8 @@ from django.views.decorators.csrf import csrf_exempt
 from .services import service
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
-import string
 import re
 import random
-from pytube import Channel
 import traceback
 from googletrans import Translator
 from selenium import webdriver
@@ -24,7 +22,6 @@ from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 import json
 import time
-import threading
 from selenium.webdriver.common.keys import Keys
 import urllib3
 urls = []
@@ -41,13 +38,10 @@ STOPWORDS = set([
 import io, os
 from django.conf import settings
 import speech_recognition as sr
-from pydub import AudioSegment
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.staticfiles import finders
-from moviepy.editor import VideoFileClip
-from moviepy.editor import AudioFileClip
 import tempfile
 from django.conf import settings 
 import moviepy.editor as mp
