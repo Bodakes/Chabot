@@ -197,7 +197,7 @@ def get_video_links():
         })
 
     # Save the video information to a JSON file
-    with open('video_info.json', 'w', encoding='utf-8') as file:
+    with open('/home/bodakes/Chatbot/Chabot/video_info.json', 'w', encoding='utf-8') as file:
         json.dump(video_info, file, ensure_ascii=False, indent=4)
     
     return video_info
@@ -234,7 +234,7 @@ def upload_data(request):
             except:
                 pass
             reply=False
-            with open('video_info.json', 'r', encoding='utf-8') as file:
+            with open('/home/bodakes/Chatbot/Chabot/video_info.json', 'r', encoding='utf-8') as file:
                 video_info = json.load(file)
             if input_txt.startswith("Re:") or input_txt.startswith("re:"):
                 input_txt = input_txt[3:].strip()
@@ -477,7 +477,7 @@ def find_first_url_for_text(search_text, marathi):
     return None
 
 
-URL_JSON_FILE = 'urls.json'
+URL_JSON_FILE = '/home/bodakes/Chatbot/Chabot/urls.json'
 
 def get_all_urls():
     # Check if the JSON file already exists and read from it
