@@ -1,0 +1,594 @@
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+	<title>NMC ChatBot</title>
+
+	<!-- Font Awesome -->
+	<script src="https://use.fontawesome.com/9b85ec9ead.js"></script>
+	<!-- Bootstrap -->
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+		integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<link rel="icon" type="image/x-icon"
+		href="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/800px-Emblem_of_India.svg.png">
+
+	<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Tilt+Neon&display=swap" rel="stylesheet">
+</head>
+<style>
+	@import url('https://fonts.googleapis.com/css?family=Roboto');
+
+	h1 {
+		font-size: 15px;
+		padding-bottom: 20px;
+	}
+
+	.navbar {
+		border: none;
+		font-family: 'Roboto', sans-serif;
+	}
+
+	#site-title {
+		width: 100%;
+		margin: auto;
+		text-align: center;
+		font-family: 'Roboto', sans-serif;
+	}
+
+	body {
+		margin: 0;
+		background-color: rgb(238, 238, 238);
+		font-family: 'Helvetica Neue', 'Roboto', sans-serif;
+		height: 800px;
+	}
+
+	#container {
+		height: 500px;
+		overflow-y: auto;
+
+		background-color: rgb(228, 241, 254);
+		border-radius: 10px;
+		padding: 20px 20px 20px 20px;
+		box-shadow: 10px 10px 15px 0 rgba(0, 0, 0, 0.3);
+	}
+
+	#main-container {
+		height: 350px;
+		overflow-y: auto;
+		background-color: #fff;
+		border-radius: 4px;
+		padding: 10px 20px 10px 20px;
+		color: #000;
+	}
+
+	#controller {
+		height: 100px;
+		margin: 0px auto;
+		margin-top: 7px;
+		display: flex
+	}
+
+	.form-control {
+		border: none;
+	}
+
+	textarea {
+		margin-top: 7px;
+		resize: none;
+	}
+
+	#send {
+		float: right;
+	}
+
+	.gif-container {
+		max-width: 150px;
+		height: 100px;
+		border-radius: 4px;
+		display: flex;
+		float: left;
+	}
+
+	.bubble {
+		margin-top: 5px;
+		width: 75%;
+		border-radius: 15px;
+		padding: 10px 20px 10px 20px;
+		display: flex;
+		box-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+	}
+
+	.user-input {
+		float: right;
+		background-color: #2080b0;
+		color: #fff;
+	}
+
+	.bot-output {
+		float: left;
+		background-color: #e5e5eaa8;
+		color: #000;
+		font-weight: 900;
+		font-size: 15px;
+	}
+
+	.search-bar {
+
+		height: 60px;
+		border: 2px solid;
+		border-radius: 15px;
+		padding: 5px 10px;
+		font-size: 16px;
+		box-shadow: 2px 2px;
+		margin-bottom: 20px;
+
+	}
+
+	.btn {
+		border: 2px solid gray;
+		color: gray;
+		background-color: white;
+		padding: 8px 20px;
+		border-radius: 8px;
+		font-size: 20px;
+		font-weight: bold;
+	}
+
+	.search-button {
+		background-color: #1e7dad;
+		color: white;
+		border: 2px solid;
+		box-shadow: 2px 2px;
+		padding: 20px 10px;
+		border-radius: 15px;
+		margin: 10px;
+		transition: 0.3s;
+		margin-top: 5px;
+		height: 8rem;
+	}
+
+	.search-button:hover {
+		color: #1e7dad;
+		background-color: #fff;
+		box-shadow: 0 4px 8px 0 rgba(226, 226, 226, 0.2), 0 6px 20px 0 rgba(226, 226, 226, 0.2);
+
+	}
+
+	.custom-file-upload {
+        display: inline-block;
+    height: 75px;
+    border: 2px solid;
+    border-radius: 15px;
+    padding: 18px 20px;
+    font-size: 16px;
+    box-shadow: 2px 2px;
+    margin-left: 6px;
+    margin-top: 7px;
+    }
+
+    input[type="file"] {
+        display: none;
+    }
+</style>
+
+<body>
+	<div class="container">
+		<div class="row">
+			<div class="col-md-12 mx-auto">
+				<div class="card">
+
+
+					<div id="site-title">
+						<div class="flex flex-col items-center justify-center">
+							<img id="google-logo" style="width: 30rem;"
+								src="https://nmc.gov.in/assets/img/nmc_logo_Marathi.png" alt="">
+						</div>
+						<h1>Chat Bot <i class="fa fa-commenting-o"></i>
+							<h1>
+					</div>
+
+					<!-- Chat Container -->
+					<div id="container">
+						<div id="main-container">
+
+						</div>
+
+						<!-- Chat Controller -->
+						<div id="controller">
+							<textarea id="textbox" class="form-control search-bar" rows="2" cols="4"
+								placeholder="Enter your message here"></textarea>
+							<label for="myFile" class="custom-file-upload">
+								<i class="fa fa-paperclip" aria-hidden="true"></i>
+                        </label>
+                        <input type="file" id="myFile" name="filename" accept="image/*,audio/*,video/*">
+							<button id="send" class="btn search-button">Send</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	</div>
+
+	<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+		integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+		crossorigin="anonymous"></script>
+	>
+	<script>
+function toggleFileInput() {
+    const fileInput = document.getElementById('complaintPhotoInput');
+    if (fileInput.style.display === 'none' || fileInput.style.display === '') {
+        fileInput.style.display = 'block';  // Show the file input
+    } else {
+        fileInput.style.display = 'none';   // Hide the file input
+    }
+}
+// Function to handle complaint form submission
+function submitComplaint(event) {
+    event.preventDefault(); // Prevent the form from submitting normally
+
+    // Hide the complaint form
+    document.getElementById('complaintForm').style.display = 'none';
+
+    // Show the "Complaint Raised" message
+    document.getElementById('complaintMessage').style.display = 'block';
+
+    // Optionally, you can send the form data (including the file) using an AJAX request
+    var formData = new FormData(document.getElementById('complaintForm'));
+
+
+}
+		botReply("Hello, How can i help you ! 🐣");
+
+
+		var responseMessage = "";
+
+		function botReply(responseMessage) {
+
+			var defaultState = $("#main-container").html();
+
+			$("#main-container").html(defaultState + "<div class=\"bubble bot-output currentMessage\">" + responseMessage + "</div></br>");
+
+			$(".currentMessage").hide().delay(850).fadeIn();
+			$(".currentMessage").removeClass("currentMessage");
+
+		}
+
+
+		var processMessage = "";
+
+		function botAlgorithm(processMessage) {
+
+
+			var button1 = document.getElementById('send');
+			var button2 = document.getElementById('textbox');
+			button1.disabled = true;
+			button2.disabled = true;
+			if ((processMessage.indexOf("hello") >= 0) || (processMessage.indexOf("hey") >= 0)) {
+				var greeting = [
+					"Heyyy",
+					"Howdy! 🤠",
+					"HELLO! I'm alive!",
+					"Hola tío!",
+					"Hi there 👋"
+				];
+				var randomGreeting = greeting[Math.floor(Math.random() * greeting.length)];
+				botReply(randomGreeting)
+				button1.disabled = false;
+						button2.disabled = false;
+			}
+
+			else if (processMessage.indexOf("how are you") >= 0) {
+				var feeling = [
+					"Meh, I'm okay 😒",
+					"Grrrreeeeaaat! 💯",
+					"Thanks, I'm doing well!",
+					"I feel like 💩",
+					"All good here."
+				];
+				var randomFeeling = feeling[Math.floor(Math.random() * feeling.length)];
+				botReply(randomFeeling)
+				button1.disabled = false;
+						button2.disabled = false;
+			}
+
+			else if ((processMessage.indexOf("lol") >= 0) || (processMessage.indexOf("lmao") >= 0) || (processMessage.indexOf("haha") >= 0)) {
+				var greeting = [
+					"Come on. It's not that funny.",
+					"😂 😂 😂",
+					"I know right?!",
+					"Jajaja!",
+					"Ha 🙃"
+				];
+				var randomGreeting = greeting[Math.floor(Math.random() * greeting.length)];
+				botReply(randomGreeting)
+				button1.disabled = false;
+						button2.disabled = false;
+			}
+
+			else if (processMessage.indexOf("bye") >= 0) {
+				var goodbye = [
+					"See ya!",
+					"Goodbye, my friend",
+					"Have a nice day!",
+					"Okay, till next time!",
+					"Bye bye bye! 😋"
+				];
+				var randomGoodbye = goodbye[Math.floor(Math.random() * goodbye.length)];
+				botReply(randomGoodbye)
+				button1.disabled = false;
+						button2.disabled = false;
+			}
+
+			else if (processMessage.indexOf("time") >= 0) {
+				var dateNow = new Date();
+				var hour = dateNow.getHours();
+				var minute = dateNow.getMinutes();
+				botReply("The time is " + hour + ":" + minute + " at your current location.");
+				button1.disabled = false;
+				button2.disabled = false;
+			}
+
+			else if (processMessage.indexOf("/gif") > -1) {
+				var gifQuery = processMessage.replace("/gif ", "").split(" ").join("+");
+				getGIF(gifQuery);
+			}
+
+			else {
+				var formData = new FormData();
+				var file = $('#myFile')[0].files[0];
+
+				// Append the file to formData
+				formData.append('file', file);
+				formData.append('searchInput', processMessage);
+					$.ajax({
+						url: '{% url "upload_data" %}',
+						type: 'POST',
+						data: formData,  // Send formData directly
+						processData: false,  // Prevent jQuery from processing the data
+						contentType: false,  // Set contentType to false as it will be set by FormData
+						success: function (response) {
+						if (response.pdf_url) {
+							// If the response contains a PDF URL, open it in a new tab
+							window.open(response.pdf_url, '_blank');
+						}
+						let description = response.desc;
+						let processMessage = response.result;  // Assuming response.result is the array you provided
+						let contactInfo = response.contact
+						let youtube_data=response.youtube_data
+							;
+						// Start the HTML response with the description
+						let botReplyMessage = `
+            <div class="bubble bot-output" style="
+                background-color: #f8f9fa;
+                border: 1px solid #dee2e6;
+                border-radius: 8px;
+                padding: 16px;
+                max-width: 400px;
+                margin: 10px 0;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                display: flex;
+                flex-direction: column;
+            ">
+            <p style="
+                font-size: 16px;
+                color: #333;
+                margin-bottom: 12px;
+                font-weight: 500;
+            ">${description}</p>`;
+
+						// Conditionally add the text-only section if there are results
+						if (processMessage.length > 0) {
+							botReplyMessage += `
+                <p style="
+                    font-size: 16px;
+                    color: #333;
+                    margin-bottom: 10px;
+                    font-weight: 500;
+                ">Here are some services related to your query.</p>
+                <div style="
+                    display: flex;
+                    flex-direction: column;
+                    margin-bottom: 16px;
+                ">`;
+
+							processMessage.forEach(function (item) {
+								botReplyMessage += `
+                    <button onclick="copyToClipboard('${item.text}')" style="
+                        background: none;
+                        border: none;
+                        color: #495057;
+                        text-decoration: underline;
+                        cursor: pointer;
+                        font-size: 16px;
+                        margin-bottom: 8px;
+                        padding: 0;
+                        text-align: left;
+                        font-weight: 400;
+                    ">${item.text}</button>`;
+							});
+
+							botReplyMessage += `</div>
+                <p style="
+                    font-size: 16px;
+                    color: #333;
+                    margin-top: 20px;
+                    margin-bottom: 10px;
+                    font-weight: 500;
+                ">Visit the services:</p>
+                <ul style="
+                    list-style-type: none;
+                    padding: 0;
+                    margin: 0;
+                ">`;
+
+							processMessage.forEach(function (item) {
+								botReplyMessage += `<li style="
+                    margin-bottom: 8px;
+                "><a href="${item.url}" target="_blank" style="
+                    color: #007bff;
+                    text-decoration: none;
+                    font-size: 16px;
+                ">${item.text}</a></li>`;
+							});
+							botReplyMessage += `
+							<hr style="border: 2px solid #000000;; margin-top: 20px; margin-bottom: 20px;">
+
+						<button onclick="copyToClipboard('Raise Complaint')" style="
+                        background: none;
+                        border: none;
+                        color: #ffcd00;
+                        text-decoration: underline;
+                        cursor: pointer;
+                        font-size: 16px;
+                        margin-bottom: 8px;
+                        padding: 0;
+                        text-align: left;
+                        font-weight: 400;
+                    ">Raise Compaint</button>
+						`
+							botReplyMessage += `</ul>`;
+						} else {
+							if (response.complaint==true)
+							{
+								botReplyMessage += `
+           
+            <form id="complaintForm" enctype="multipart/form-data" onsubmit="submitComplaint(event)">
+    <textarea name="query" placeholder="Describe your complaint" style="width: 100%; height: 100px; font-size: 14px;" required></textarea><br><br>
+    <button type="button" onclick="toggleFileInput()" style="font-size: 16px; color: #007bff; background: none; border: none; cursor: pointer;">
+        Upload an image (Optional)
+    </button><br><br>
+
+    <!-- Hidden file input -->
+    <input type="file" name="photo" accept="image/*" style="font-size: 14px;" id="complaintPhotoInput"><br><br>
+    
+    <button type="submit" style="font-size: 16px; color: white; background-color: #007bff; border: none; padding: 8px 16px; cursor: pointer;">
+        Submit Complaint
+    </button>
+</form>
+
+<!-- Placeholder for the "Complaint Raised" message -->
+<div id="complaintMessage" style="display: none; font-size: 16px; color: #333; margin-top: 10px; font-weight: 500;">
+    Complaint Raised! Thank you for your submission.
+</div>
+        `;
+							}
+							// If no services are found, you might not need this section
+							else{botReplyMessage += `
+                <p style="
+                    font-size: 16px;
+                    color: #333;
+                    margin-top: 10px;
+                ">No services found matching your Input. Please try different keywords or provide more details..</p>`;
+						}}
+						botReplyMessage += youtube_data 
+						
+						botReplyMessage += contactInfo + `</div>`
+
+						// Send the formatted message to the botReply function
+						botReply(botReplyMessage);
+						button1.disabled = false;
+						button2.disabled = false;
+					},
+					error: function (xhr, status, error) {
+						var botReplyMessage = ''
+						botReplyMessage += `
+                <p style="
+                    font-size: 16px;
+                    color: #333;
+                    margin-top: 10px;
+                ">Please Visit Above Service  ..! </p>`;
+						botReply(botReplyMessage);
+						button1.disabled = false;
+						button2.disabled = false;
+					}
+				});
+			}
+		}
+
+		function getGIF(input) {
+			$(".main-container").innerHTML = "";
+
+			var giphySource = "http://api.giphy.com/v1/gifs/search?q=";
+			var giphyKey = "&api_key=dc6zaTOxFJmzC";
+
+			var giphySearch = giphySource + input + giphyKey;
+
+			var giphyAJAXCall = new XMLHttpRequest();
+			giphyAJAXCall.open("GET", giphySearch);
+			giphyAJAXCall.send();
+
+			giphyAJAXCall.addEventListener("load", function (e) {
+				var data = e.target.response;
+				var response = JSON.parse(data);
+
+				var imageUrls = response.data;
+
+				imageUrls.forEach(function (image) {
+
+					var src = image.images.fixed_height.url;
+
+					botReply("<img src=\"" + src + "\" class=\"gif-container\"></br>");
+
+				});
+			});
+		}
+
+		function copyToClipboard(txt) {
+			$("#textbox").val('')
+			$("#textbox").val("Re:" + txt)
+			$("#send").click();
+		}
+
+		$(document).ready(function () {
+
+			$("#textbox").keypress(function (event) {
+
+				if (event.which === 13) {
+
+
+
+					$("#send").click();
+
+					event.preventDefault();
+
+				}
+			});
+
+			$("#send").click(function () {
+
+				var userMessage = $("#textbox").val();
+				// if (userMessage != "") {
+
+
+
+					$("#textbox").val("");
+
+					var defaultState = $("#main-container").html();
+					if (userMessage != "") {
+
+					$("#main-container").html(defaultState + "<div class=\"bubble user-input\">" + userMessage + "</div></br>");
+					}
+
+					$("#main-container").scrollTop($("#main-container").prop("scrollHeight"));
+
+					var forBotProcess = userMessage.toString().toLowerCase();
+
+					botAlgorithm(forBotProcess);
+				// }
+			});
+		});
+
+	</script>
+</body>
+
+</html>

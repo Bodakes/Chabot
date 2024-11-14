@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="author" content="Rajkishor Kushwaha">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="icon" type="image/x-icon"
+        href="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/800px-Emblem_of_India.svg.png">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tilt+Neon&display=swap" rel="stylesheet">
+    
+</head>
+<style>
+    * {
+
+            font-weight: 400; /* Adjusted weight for better readability */
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif; /* Fallback font */
+        }
+        #desc {
+            padding: 20px;
+    font-size: 1.1rem;
+    color: #333333;
+    line-height: 1.8;
+    background-color: #f1f1f1;
+    border: 6px solid #1e7dad;
+    border-radius: 35px;
+    box-shadow: 0 7px 17px rgb(30 125 173 / 45%);
+    margin-top: 20px;
+        }
+    .upload-btn-wrapper {
+        position: relative;
+        overflow: hidden;
+        display: inline-block;
+    }
+
+    .btn {
+        border: 2px solid gray;
+        color: gray;
+        background-color: white;
+        padding: 8px 20px;
+        border-radius: 8px;
+        font-size: 20px;
+        font-weight: bold;
+    }
+
+    .upload-btn-wrapper input[type=file] {
+        font-size: 100px;
+        position: absolute;
+        left: 0;
+        top: 0;
+        opacity: 0;
+    }
+
+    /* Flexbox container for aligning items */
+    .flex-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #google-logo {
+        margin-bottom: 10px;
+    }
+
+    .search-bar {
+        width: 450px;
+        height: 60px;
+        border: 2px solid;
+        border-radius: 15px;
+        padding: 5px 10px;
+        font-size: 16px;
+        box-shadow: 2px 2px;
+        margin-bottom: 20px;
+
+    }
+
+    .custom-file-upload {
+        display: inline-block;
+        height: 60px;
+        border: 2px solid;
+        border-radius: 15px;
+        padding: 18px 20px;
+        font-size: 16px;
+        box-shadow: 2px 2px;
+        margin-left: 6px;
+    }
+
+    input[type="file"] {
+        display: none;
+    }
+
+    .search-button {
+        background-color: #ffffff;
+        color: #000000;
+        border: 2px solid;
+        box-shadow: 2px 2px;
+        padding: 20px 10px;
+        border-radius: 15px;
+        margin: 10px;
+        transition: 0.3s;
+    }
+
+    .search-button:hover {
+        background-color: #ffffff;
+        box-shadow: 0 4px 8px 0 rgba(226, 226, 226, 0.2), 0 6px 20px 0 rgba(226, 226, 226, 0.2);
+
+    }
+
+    form {
+        margin-bottom: 40px;
+    }
+
+
+    .web-icon {
+        border-radius: 5px;
+        background-color: aliceblue;
+        padding: 5px;
+        margin: 3px;
+        transition: 0.2s;
+    }
+
+    .web-icon:hover {
+        box-shadow: 0 4px 8px 0 rgba(226, 226, 226, 0.2), 0 6px 20px 0 rgba(226, 226, 226, 0.2);
+    }
+
+    /* Sidebar Styles */
+    .sidebar {
+        width: 400px;
+        height: auto;
+        background-color: #1b1b1b;
+        border-radius: 20px;
+        padding: 0px;
+        margin-left: 30px;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        /* Adjusted to margin-left */
+    }
+
+    #credit {
+        font-size: 11px;
+        color: gray;
+    }
+
+    #codepen-credit {
+        text-decoration: underline;
+    }
+
+    ul {
+        list-style: none;
+        margin: 1em auto;
+        padding: 0;
+        width: 90em;
+    }
+
+    @media (min-width: 20em) {
+        ul {
+            width: 40em
+        }
+    }
+
+    @media (min-width: 30em) {
+        ul {
+            width: 50em
+        }
+    }
+
+    @media (min-width: 40em) {
+        ul {
+            width: 60em
+        }
+    }
+
+    @media (min-width: 60em) {
+        ul {
+            width: 90em
+        }
+    }
+
+    #li_img {
+        background: url("https://source.unsplash.com/random/100x100");
+    }
+
+    .scrollable-box a {
+        display: inline-block;
+        text-overflow: ellipsis;
+        /* Optional: Add ellipsis for long text */
+        overflow: hidden;
+
+    }
+
+
+    li {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    float: left;
+    width: 13em;
+    height: 10em;
+    margin: 1em;
+    padding: 1rem;
+    border-radius: 25px;
+    background: white;
+    color: black;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    box-shadow: 0 7px 1px 0 rgb(33 128 176), 0 1px 3px 0 rgb(33 128 175);
+    overflow: auto;
+}
+
+    .card{
+        border: none;
+    }
+    .card-body {
+            margin-bottom: 20px;
+        }
+
+        .card-header{
+            font-weight: 900;
+    color: #1e7dad;
+    font-family: math;
+    font-size: 25px;
+        }
+        .search-button:hover {
+        background-color: #ffffff;
+        box-shadow: 0 4px 8px 0 rgba(226, 226, 226, 0.2), 0 6px 20px 0 rgba(226, 226, 226, 0.2);
+
+    }
+</style>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 mx-auto">
+            <div class="card">
+                <div class="flex flex-col items-center justify-center">
+                    <img id="google-logo" style="width: 30rem;" src="https://nmc.gov.in/assets/img/nmc_logo_Marathi.png" alt="">
+                    <form id="upload-form">
+                        {% csrf_token%}
+                        <input type="text" name="searchBar" class="search-bar" placeholder="Search Google">
+                        <!-- <label for="myFile" class="custom-file-upload">
+                            Upload File
+                        </label>
+                        <input type="file" id="myFile" name="filename" accept="image/*,audio/*,video/*"> -->
+                        <button type="button" onclick="uploadData()" class="btn btn-primary">Search</button>
+
+                    </form>
+                </div>
+
+                    <div class="card mb-4" id="Description" style="display: none;">
+                        <div class="card-body" id="desc">
+                            <!-- Description content will be inserted here -->
+                        </div>
+                    </div>
+                <div class="card-body" id="Services" style="display: none;">
+                    <div class="card-header"> Services </div>
+                        <ul class="scrollable-box"  id="cards">
+                           
+                        </ul>
+
+
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script>
+    function uploadData() {
+        var formData = new FormData(document.getElementById('upload-form'));
+
+        $.ajax({
+            url: '{% url "upload_data" %}',  // Django URL for the view
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                $('#cards').empty();
+                $('#desc').empty();
+                if (response.desc && response.desc.length > 0) {
+                    $("#Description").show();
+                    var listItems ='<B> ' + response.desc + '</B>';
+                   
+                    $('#desc').html(listItems);
+                }
+                else {
+                    $("#Description").hide();
+                }
+                if (response.result && response.result.length > 0) {
+                    // Update the content if there are results
+                    var listItems = response.result.map(function(item) {
+                        return '<li><a href="' + item.url + '" target="_blank" class="text-decoration-none text-dark hover:text-primary">' + item.text + '</a></li>';
+                    }).join('');
+                    $('#cards').html(listItems);
+                    
+                    $("#Services").show();
+                } 
+                
+                else {
+                    $("#Services").hide();
+                    // Clear the content if there are no results
+                    $('#cards').html('<li>No results found.</li>');
+                }
+            },
+            error: function(xhr, status, error) {
+                alert('An error occurred: ' + error);
+            }
+        });
+    }
+
+
+</script>
+
+</html>
