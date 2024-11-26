@@ -362,6 +362,7 @@ function submitComplaint(event) {
 						processData: false,  // Prevent jQuery from processing the data
 						contentType: false,  // Set contentType to false as it will be set by FormData
 						success: function (response) {
+							$('#myFile').val('');
 						if (response.pdf_url) {
 							// If the response contains a PDF URL, open it in a new tab
 							window.open(response.pdf_url, '_blank');
@@ -505,6 +506,7 @@ function submitComplaint(event) {
 						button2.disabled = false;
 					},
 					error: function (xhr, status, error) {
+						$('#myFile').val('');
 						var botReplyMessage = ''
 						botReplyMessage += `
                 <p style="

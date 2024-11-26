@@ -37,6 +37,7 @@ import moviepy.editor as mp
 import logging
 import certifi
 from pathlib import Path
+from image_predict import *
 urls = []
 # The provided list of texts
 texts=service
@@ -64,10 +65,10 @@ if not os.path.exists(UPLOAD_DIR):
 @csrf_exempt
 def voiceconverter(request):
     if request.method == 'POST':
-        uploaded_file = request.FILES.get('file')
+        uploaded_file = request.FILES.get('file')  # Single 'file' key for both types
 
         if uploaded_file:
-            # Save the uploaded video/audio file temporarily
+            # Save the uploaded file temporarily
             media_file_path = os.path.join(UPLOAD_DIR, uploaded_file.name)
 
             try:
@@ -78,51 +79,71 @@ def voiceconverter(request):
                 print(f"Error saving file: {e}")
                 return None  # Return None on error
 
-            # Prepare to extract audio from the file
-            audio_file_path = os.path.splitext(media_file_path)[0] + '.wav'
-
-            try:
-                # Check if the uploaded file is an audio or video file
-                if media_file_path.lower().endswith(('.mp4', '.avi', '.mov')):  # Video files
-                    with mp.VideoFileClip(media_file_path) as media:
-                        media.audio.write_audiofile(audio_file_path)
-                elif media_file_path.lower().endswith(('.mp3', '.wav')):  # Audio files
-                    # If it's an audio file, just copy it to the new path
-                    os.rename(media_file_path, audio_file_path)
-                else:
-                    print("Unsupported file type")
-                    return None  # Return None on unsupported file type
-            except Exception as e:
-                print(f"Error extracting audio: {e}")
-                return None  # Return None on error
-
-            recognizer = sr.Recognizer()
-            try:
-                # Use the audio file for speech recognition
-                with sr.AudioFile(audio_file_path) as source:
-                    audio_data = recognizer.record(source)
-                    text = recognizer.recognize_google(audio_data)
-                    return text
-            except sr.UnknownValueError:
-                print("Could not understand audio")
-                return None  # Return None on error
-            except sr.RequestError as e:
-                print(f'Service unavailable; {e}')
-                return None  # Return None on error
-            except Exception as e:
-                print(f"Error recognizing speech: {e}")
-                return None  # Return None on error
-            finally:
-                # Clean up temporary files
+            # Determine file type and handle accordingly
+            if media_file_path.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.jfif', '.tiff')):  # Image file
                 try:
+                    # Predict using the image model
+                    with open(media_file_path, 'rb') as img_file:
+                        prediction_response = predict_model_from_image(img_file)
+                        print("Prediction Response:", prediction_response)
+
+                    # Clean up the temporary image file
                     if os.path.exists(media_file_path):
                         os.remove(media_file_path)
-                    if os.path.exists(audio_file_path):
-                        os.remove(audio_file_path)
+
+                    return prediction_response['predicted_label']  # Return the prediction
                 except Exception as e:
-                    print(f"Error deleting temporary files: {e}")
+                    print(f"Error processing image: {e}")
+                    return None  # Return None on error
+
+            else:  # Audio or video file
+                audio_file_path = os.path.splitext(media_file_path)[0] + '.wav'
+
+                try:
+                    # Check if the uploaded file is an audio or video file
+                    if media_file_path.lower().endswith(('.mp4', '.avi', '.mov')):  # Video files
+                        with mp.VideoFileClip(media_file_path) as media:
+                            media.audio.write_audiofile(audio_file_path)
+                    elif media_file_path.lower().endswith(('.mp3', '.wav')):  # Audio files
+                        # If it's an audio file, just copy it to the new path
+                        os.rename(media_file_path, audio_file_path)
+                    else:
+                        print("Unsupported file type")
+                        return None  # Return None on unsupported file type
+                except Exception as e:
+                    print(f"Error extracting audio: {e}")
+                    return None  # Return None on error
+
+                recognizer = sr.Recognizer()
+                try:
+                    # Use the audio file for speech recognition
+                    with sr.AudioFile(audio_file_path) as source:
+                        audio_data = recognizer.record(source)
+                        text = recognizer.recognize_google(audio_data)
+                        return text  # Return the transcribed text
+                except sr.UnknownValueError:
+                    print("Could not understand audio")
+                    return None  # Return None on error
+                except sr.RequestError as e:
+                    print(f'Service unavailable; {e}')
+                    return None  # Return None on error
+                except Exception as e:
+                    print(f"Error recognizing speech: {e}")
+                    return None  # Return None on error
+                finally:
+                    # Clean up temporary files
+                    try:
+                        if os.path.exists(media_file_path):
+                            os.remove(media_file_path)
+                        if os.path.exists(audio_file_path):
+                            os.remove(audio_file_path)
+                    except Exception as e:
+                        print(f"Error deleting temporary files: {e}")
 
     return None  # Return None if the request method is not POST
+
+
+
 def translate_to_marathi(text):
     translator = Translator()
     translated = translator.translate(text, src='en', dest='mr')
