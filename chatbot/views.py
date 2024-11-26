@@ -81,6 +81,7 @@ def voiceconverter(request):
 
             # Determine file type and handle accordingly
             if media_file_path.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.jfif', '.tiff')):  # Image file
+                print("image")
                 try:
                     # Predict using the image model
                     with open(media_file_path, 'rb') as img_file:
@@ -97,6 +98,7 @@ def voiceconverter(request):
                     return None  # Return None on error
 
             else:  # Audio or video file
+                print("audio/video")
                 audio_file_path = os.path.splitext(media_file_path)[0] + '.wav'
 
                 try:
@@ -145,9 +147,12 @@ def voiceconverter(request):
 
 
 def translate_to_marathi(text):
-    translator = Translator()
-    translated = translator.translate(text, src='en', dest='mr')
-    return translated.text
+    try:
+        translator = Translator()
+        translated = translator.translate(text, src='en', dest='mr')
+        return translated.text
+    except:
+        return ''
 def preprocess_input(query):
     query = query.lower()
     query = re.sub(r'\bnashik\b', '', query)
@@ -254,6 +259,7 @@ def upload_data(request):
                 return JsonResponse({'message': 'Data processed successfully!','complaint':True, 'result': [],'desc':'','contact':[],'youtube_data':[]})
             try:
                 input_data=voiceconverter(request)
+                print("return from converter",input_data)
                 if (input_data):
                     input_txt=input_data
                 
