@@ -346,7 +346,12 @@ function submitComplaint(event) {
 			else {
 				var formData = new FormData();
 				var file = $('#myFile')[0].files[0];
-
+				var fileInput = $('#myFile')[0];
+				if (fileInput && fileInput.files.length > 0) {
+					var defaultState = $("#main-container").html();
+					var file = fileInput.files[0]; // Get the first file
+					$("#main-container").html(defaultState + "<div class=\"bubble user-input\">" + file.name + " file is Uploading </div><br/>");
+				}
 				// Append the file to formData
 				formData.append('file', file);
 				formData.append('searchInput', processMessage);

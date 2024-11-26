@@ -24,17 +24,6 @@ import json
 import time
 from selenium.webdriver.common.keys import Keys
 import urllib3
-urls = []
-# The provided list of texts
-texts=service
-STOPWORDS = set([
-    'a', 'an', 'the', 'and', 'or', 'of', 'to', 'in', 'for', 'on', 'with', 'at', 'by', 'from', 'as', 'that', 'is', 
-    'was', 'were', 'be', 'has', 'have', 'had', 'not', 'are', 'will', 'can', 'but', 'nashik', '?', 'about', 'help', 
-    'me', 'you', 'your', 'please', 'tell', 'show', 'give', 'find', 'how', 'do', 'does', 'it', 'this', 'need', 'want', 
-    'know', 'could', 'would', 'which', 'what', 'who', 'when', 'where', 'why', 'can', 'may', 'get', 'more', 'provide', 
-    'looking', 'like', 'inform', 'details', 'information', 'required'
-])
-
 import io, os
 from django.conf import settings
 import speech_recognition as sr
@@ -47,10 +36,27 @@ from django.conf import settings
 import moviepy.editor as mp
 import logging
 import certifi
+from pathlib import Path
+urls = []
+# The provided list of texts
+texts=service
+STOPWORDS = set([
+    'a', 'an', 'the', 'and', 'or', 'of', 'to', 'in', 'for', 'on', 'with', 'at', 'by', 'from', 'as', 'that', 'is', 
+    'was', 'were', 'be', 'has', 'have', 'had', 'not', 'are', 'will', 'can', 'but', 'nashik', '?', 'about', 'help', 
+    'me', 'you', 'your', 'please', 'tell', 'show', 'give', 'find', 'how', 'do', 'does', 'it', 'this', 'need', 'want', 
+    'know', 'could', 'would', 'which', 'what', 'who', 'when', 'where', 'why', 'can', 'may', 'get', 'more', 'provide', 
+    'looking', 'like', 'inform', 'details', 'information', 'required'
+])
+
 
 
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), 'uploaded_audios')
+# Get the base directory of your project (directory containing the script)
+BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Construct the full path to video_info.json
+video_info_file = os.path.join(BASE_DIR, 'video_info.json')
+URL_JSON_FILE = os.path.join(BASE_DIR, 'urls.json')
 # Ensure the upload directory exists
 if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
@@ -123,7 +129,6 @@ def translate_to_marathi(text):
     return translated.text
 def preprocess_input(query):
     query = query.lower()
-    # Remove "Nashik" and stopwords
     query = re.sub(r'\bnashik\b', '', query)
     words = re.findall(r'\b\w+\b', query)
     filtered_words = [word for word in words if word not in STOPWORDS]
@@ -197,7 +202,7 @@ def get_video_links():
         })
 
     # Save the video information to a JSON file
-    with open('/home/bodakes/Chatbot/Chabot/video_info.json', 'w', encoding='utf-8') as file:
+    with open(video_info_file, 'w', encoding='utf-8') as file:
         json.dump(video_info, file, ensure_ascii=False, indent=4)
     
     return video_info
@@ -234,7 +239,8 @@ def upload_data(request):
             except:
                 pass
             reply=False
-            with open('/home/bodakes/Chatbot/Chabot/video_info.json', 'r', encoding='utf-8') as file:
+            
+            with open(video_info_file, 'r', encoding='utf-8') as file:
                 video_info = json.load(file)
             if input_txt.startswith("Re:") or input_txt.startswith("re:"):
                 input_txt = input_txt[3:].strip()
@@ -477,7 +483,6 @@ def find_first_url_for_text(search_text, marathi):
     return None
 
 
-URL_JSON_FILE = '/home/bodakes/Chatbot/Chabot/urls.json'
 
 def get_all_urls():
     # Check if the JSON file already exists and read from it
