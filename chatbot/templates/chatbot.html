@@ -231,22 +231,77 @@ function toggleFileInput() {
     } else {
         fileInput.style.display = 'none';   // Hide the file input
     }
+} 
+// Start video stream from camera
+navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+    .then(stream => {
+        document.getElementById('video').srcObject = stream;
+    })
+    .catch(err => {
+        console.error("Camera error:", err);
+        alert("Unable to access camera.");
+    });
+
+// Capture image from video
+let capturedBlob = null;
+
+function captureImage() {
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0);
+    
+    canvas.toBlob(function(blob) {
+        capturedBlob = blob;
+        alert("Image captured successfully.");
+    }, 'image/jpeg', 0.95);
 }
-// Function to handle complaint form submission
+
+// Get geolocation
+navigator.geolocation.getCurrentPosition(function(position) {
+    document.getElementById('lat').value = position.coords.latitude;
+    document.getElementById('lon').value = position.coords.longitude;
+});
+// Submit form data to backend
 function submitComplaint(event) {
-    event.preventDefault(); // Prevent the form from submitting normally
+    event.preventDefault();
 
-    // Hide the complaint form
-    document.getElementById('complaintForm').style.display = 'none';
+    const query = document.getElementById('query').value;
+    const lat = document.getElementById('lat').value;
+    const lon = document.getElementById('lon').value;
 
-    // Show the "Complaint Raised" message
-    document.getElementById('complaintMessage').style.display = 'block';
+    if (!capturedBlob) {
+        alert("Please capture an image first.");
+        return;
+    }
 
-    // Optionally, you can send the form data (including the file) using an AJAX request
-    var formData = new FormData(document.getElementById('complaintForm'));
+    const formData = new FormData();
+    formData.append('query', query);
+    formData.append('latitude', lat);
+    formData.append('longitude', lon);
+    formData.append('photo', capturedBlob, 'captured.jpg');
 
-
+    fetch('submit-complaint/', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'success') {
+            document.getElementById('complaintMessage').style.display = 'block';
+            botReply(`Your current location - Lat: ${data.latitude}, Lon: ${data.longitude}`);
+        } else {
+            alert("Submission failed: " + data.message);
+        }
+    })
+    .catch(err => {
+        console.error('Error:', err);
+    });
 }
+
 		botReply("Hello, How can i help you ! 🐣");
 
 
@@ -468,21 +523,24 @@ function submitComplaint(event) {
 							{
 								botReplyMessage += `
            
-            <form id="complaintForm" enctype="multipart/form-data" onsubmit="submitComplaint(event)">
-    <textarea name="query" placeholder="Describe your complaint" style="width: 100%; height: 100px; font-size: 14px;" required></textarea><br><br>
-    <button type="button" onclick="toggleFileInput()" style="font-size: 16px; color: #007bff; background: none; border: none; cursor: pointer;">
-        Upload an image (Optional)
+            <form id="complaintForm" onsubmit="submitComplaint(event)">
+    <textarea name="query" id="query" placeholder="Describe your complaint" style="width: 100%; height: 100px; font-size: 14px;" required></textarea><br><br>
+
+    <video id="video" width="100%" height="240" autoplay style="border: 1px solid #ccc;"></video><br>
+    <canvas id="canvas" style="display: none;"></canvas>
+
+    <button type="button" onclick="captureImage()" style="font-size: 16px; color: white; background-color: green; border: none; padding: 8px 16px; cursor: pointer;">
+        Capture Image
     </button><br><br>
 
-    <!-- Hidden file input -->
-    <input type="file" name="photo" accept="image/*" style="font-size: 14px;" id="complaintPhotoInput"><br><br>
-    
+    <input type="hidden" name="latitude" id="lat">
+    <input type="hidden" name="longitude" id="lon">
+
     <button type="submit" style="font-size: 16px; color: white; background-color: #007bff; border: none; padding: 8px 16px; cursor: pointer;">
         Submit Complaint
     </button>
 </form>
 
-<!-- Placeholder for the "Complaint Raised" message -->
 <div id="complaintMessage" style="display: none; font-size: 16px; color: #333; margin-top: 10px; font-weight: 500;">
     Complaint Raised! Thank you for your submission.
 </div>
