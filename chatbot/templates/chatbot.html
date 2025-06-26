@@ -222,7 +222,7 @@
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
 		integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
 		crossorigin="anonymous"></script>
-	>
+	
 	<script>
 function toggleFileInput() {
     const fileInput = document.getElementById('complaintPhotoInput');
@@ -231,22 +231,109 @@ function toggleFileInput() {
     } else {
         fileInput.style.display = 'none';   // Hide the file input
     }
+} 
+
+
+
+
+// Capture image from video
+let capturedBlob = null;
+
+function captureImage() {
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0);
+    
+    canvas.toBlob(function(blob) {
+        capturedBlob = blob;
+        alert("Image captured successfully.");
+    }, 'image/jpeg', 0.95);
 }
-// Function to handle complaint form submission
+
+
+// Submit form data to backend
 function submitComplaint(event) {
-    event.preventDefault(); // Prevent the form from submitting normally
+    event.preventDefault();
+	
+	$("#complaintForm").hide();
+    const query = document.getElementById('query').value;
+    const lat = document.getElementById('lat').value;
+    const lon = document.getElementById('lon').value;
 
-    // Hide the complaint form
-    document.getElementById('complaintForm').style.display = 'none';
+    if (!capturedBlob) {
+        alert("Please capture an image first.");
+        return;
+    }
 
-    // Show the "Complaint Raised" message
-    document.getElementById('complaintMessage').style.display = 'block';
+    const formData = new FormData();
+    formData.append('query', query);
+    formData.append('latitude', lat);
+    formData.append('longitude', lon);
+    formData.append('photo', capturedBlob, 'captured.jpg');
 
-    // Optionally, you can send the form data (including the file) using an AJAX request
-    var formData = new FormData(document.getElementById('complaintForm'));
-
-
+    fetch('submit-complaint/', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'success') {
+            document.getElementById('complaintMessage').style.display = 'block';
+			msg=`<div class="bubble bot-output" style="
+                background-color: #f8f9fa;
+                border: 1px solid #dee2e6;
+                border-radius: 8px;
+                padding: 16px;
+                max-width: 400px;
+                margin: 10px 0;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                display: flex;
+                flex-direction: column;
+            ">
+                <p style="
+                    font-size: 16px;
+                    color: #333;
+                    margin-top: 20px;
+                    margin-bottom: 10px;
+                    font-weight: 500;
+                ">Your current location:</p>
+                <ul style="
+                    list-style-type: none;
+                    padding: 0;
+                    margin: 0;
+                ">
+				<li style="
+                    margin-bottom: 8px;
+                ">Lat:${data.latitude}</li>
+				<li style="
+                    margin-bottom: 8px;
+                ">Lon: ${data.longitude}</li>
+				<li style="
+                    margin-bottom: 8px;
+                "><a href="${data.google_maps_url}" target="_blank" style="
+                    color: #007bff;
+                    text-decoration: none;
+                    font-size: 16px;
+                ">View on Google Maps</a></li>
+				<li style="
+                    margin-bottom: 8px;
+                ">Image contain :${data.text} </li>
+				</ul>
+				</div>`
+            botReply(msg);
+        } else {
+            alert("Submission failed: " + data.message);
+        }
+    })
+    .catch(err => {
+        console.error('Error:', err);
+    });
 }
+
 		botReply("Hello, How can i help you ! 🐣");
 
 
@@ -466,27 +553,46 @@ function submitComplaint(event) {
 						} else {
 							if (response.complaint==true)
 							{
+								
 								botReplyMessage += `
            
-            <form id="complaintForm" enctype="multipart/form-data" onsubmit="submitComplaint(event)">
-    <textarea name="query" placeholder="Describe your complaint" style="width: 100%; height: 100px; font-size: 14px;" required></textarea><br><br>
-    <button type="button" onclick="toggleFileInput()" style="font-size: 16px; color: #007bff; background: none; border: none; cursor: pointer;">
-        Upload an image (Optional)
+            <form id="complaintForm" onsubmit="submitComplaint(event)">
+    <textarea name="query" id="query" placeholder="Describe your complaint" style="width: 100%; height: 100px; font-size: 14px;" required></textarea><br><br>
+
+    <video id="video" width="100%" height="240" autoplay style="border: 1px solid #ccc;"></video><br>
+    <canvas id="canvas" style="display: none;"></canvas>
+
+    <button type="button" onclick="captureImage()" style="font-size: 16px; color: white; background-color: green; border: none; padding: 8px 16px; cursor: pointer;">
+        Capture Image
     </button><br><br>
 
-    <!-- Hidden file input -->
-    <input type="file" name="photo" accept="image/*" style="font-size: 14px;" id="complaintPhotoInput"><br><br>
-    
+    <input type="hidden" name="latitude" id="lat">
+    <input type="hidden" name="longitude" id="lon">
+
     <button type="submit" style="font-size: 16px; color: white; background-color: #007bff; border: none; padding: 8px 16px; cursor: pointer;">
         Submit Complaint
     </button>
 </form>
 
-<!-- Placeholder for the "Complaint Raised" message -->
 <div id="complaintMessage" style="display: none; font-size: 16px; color: #333; margin-top: 10px; font-weight: 500;">
     Complaint Raised! Thank you for your submission.
 </div>
         `;
+		navigator.geolocation.getCurrentPosition(
+	function(position) {
+		document.getElementById('lat').value = position.coords.latitude;
+		document.getElementById('lon').value = position.coords.longitude;
+		console.log("Accurate location:", position.coords.latitude, position.coords.longitude);
+	},
+	function(error) {
+		console.error("Location error:", error);
+	},
+	{
+		enableHighAccuracy: true,
+		timeout: 10000,
+		maximumAge: 0
+	}
+);
 							}
 							// If no services are found, you might not need this section
 							else{botReplyMessage += `
@@ -504,6 +610,19 @@ function submitComplaint(event) {
 						botReply(botReplyMessage);
 						button1.disabled = false;
 						button2.disabled = false;
+						const video = document.getElementById('video');
+
+						navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+							.then(stream => {
+								video.srcObject = stream;
+							})
+							.catch(err => {
+								console.error("Camera error:", err);
+								// alert("Unable to access camera.");
+						});
+												// Get geolocation
+						
+
 					},
 					error: function (xhr, status, error) {
 						$('#myFile').val('');

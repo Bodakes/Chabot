@@ -1,7 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
-from django.urls import get_resolver
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.http import JsonResponse
@@ -9,8 +8,6 @@ import os
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .services import service
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
 import re
 import random
 import traceback
@@ -30,14 +27,101 @@ import speech_recognition as sr
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.staticfiles import finders
-import tempfile
 from django.conf import settings 
-import moviepy.editor as mp
-import logging
-import certifi
 from pathlib import Path
 from image_predict import *
+# utils.py or inside views.py
+from PIL import Image
+import piexif
+
+
+def get_decimal_from_dms(dms, ref):
+    degrees = dms[0][0] / dms[0][1]
+    minutes = dms[1][0] / dms[1][1]
+    seconds = dms[2][0] / dms[2][1]
+    decimal = degrees + (minutes / 60.0) + (seconds / 3600.0)
+    if ref in ['S', 'W']:
+        decimal = -decimal
+    return decimal
+
+
+def extract_gps_from_image(image_file):
+    try:
+        img = Image.open(image_file)
+        exif_data = img.info.get('exif')
+        if not exif_data:
+            return None, None
+
+        exif_dict = piexif.load(exif_data)
+        gps_data = exif_dict.get("GPS")
+        if not gps_data:
+            return None, None
+
+        gps_latitude = gps_data.get(piexif.GPSIFD.GPSLatitude)
+        gps_latitude_ref = gps_data.get(piexif.GPSIFD.GPSLatitudeRef)
+        gps_longitude = gps_data.get(piexif.GPSIFD.GPSLongitude)
+        gps_longitude_ref = gps_data.get(piexif.GPSIFD.GPSLongitudeRef)
+
+        if not all([gps_latitude, gps_latitude_ref, gps_longitude, gps_longitude_ref]):
+            print("not all return")
+            return None, None
+
+        lat = get_decimal_from_dms(gps_latitude, gps_latitude_ref.decode())
+        lon = get_decimal_from_dms(gps_longitude, gps_longitude_ref.decode())
+
+        return lat, lon
+    
+    except Exception as e:
+        print("EXIF extraction error:", e)
+        return None, None
+
+
+@csrf_exempt
+def submit_complaint(request):
+    if request.method == 'POST':
+        query = request.POST.get('query')
+        latitude = request.POST.get('latitude')
+        longitude = request.POST.get('longitude')
+        photo = request.FILES.get('photo')
+        text=None
+        # Save the uploaded file temporarily
+        media_file_path = os.path.join(UPLOAD_DIR, photo.name)
+
+        try:
+            with open(media_file_path, 'wb+') as destination:
+                for chunk in photo.chunks():
+                    destination.write(chunk)
+        except Exception as e:
+            print(f"Error saving file: {e}")
+            return None  # Return None on error
+
+        # Determine file type and handle accordingly
+        if media_file_path.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.jfif', '.tiff')):  # Image file
+            print("image")
+            try:
+                # Predict using the image model
+                with open(media_file_path, 'rb') as img_file:
+                    prediction_response = predict_model_from_image(img_file)
+                    print("Prediction Response:", prediction_response)
+
+                # Clean up the temporary image file
+                if os.path.exists(media_file_path):
+                    os.remove(media_file_path)
+                text=prediction_response['predicted_label']
+            except Exception as e:
+                print(f"Error processing image: {e}")
+                text= None  # Return None on error
+
+        # Save to DB if needed
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Complaint Raised! Thank you for your submission.',
+            'latitude': latitude,
+            'longitude': longitude,
+            'google_maps_url' : f"https://www.google.com/maps?q={latitude},{longitude}",
+            "text":text
+        })
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
 urls = []
 # The provided list of texts
 texts=service
@@ -48,7 +132,6 @@ STOPWORDS = set([
     'know', 'could', 'would', 'which', 'what', 'who', 'when', 'where', 'why', 'can', 'may', 'get', 'more', 'provide', 
     'looking', 'like', 'inform', 'details', 'information', 'required'
 ])
-
 
 
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), 'uploaded_audios')
@@ -259,7 +342,7 @@ def upload_data(request):
                 return JsonResponse({'message': 'Data processed successfully!','complaint':True, 'result': [],'desc':'','contact':[],'youtube_data':[]})
             try:
                 input_data=voiceconverter(request)
-                print("return from converter",input_data)
+                # print("return from converter",input_data)
                 if (input_data):
                     input_txt=input_data
                 
@@ -280,6 +363,7 @@ def upload_data(request):
             print("url",url,reply)
             if url or  reply:
                 page_heading,strong_text,links_info=get_page_details(url)
+                # print(page_heading,strong_text,links_info)
                 random_number = random.randint(1, 9)
                 yt=search_videos(video_info,page_heading,marathi_text)
                 # Define the contact information with the random number inserted
@@ -555,29 +639,33 @@ def get_page_details(url):
     soup = BeautifulSoup(response.content, 'html.parser')
 
     
-    # Find the div with class 'right-pannel'
-    right_pannel_div = soup.find('div', class_='right-pannel')
+    
 
-    # Extract the page heading
-    try:
-        page_heading = right_pannel_div.find( class_='page_heading').text.strip()
-    except:
-        page_heading
+    # Find the div with class 'main rti-sec main-head'
+    main_head_div = soup.find('div', class_='main rti-sec main-head')
 
-
+    page_heading = None
+    heading_tag = main_head_div.find('h2')  # <- removed class_ filter
+    if heading_tag:
+        page_heading = heading_tag.text.strip()
+    # Extract the strong text (if available)
+    strong_text = None
+    strong_tag = main_head_div.find('strong')
+    if strong_tag:
+        strong_text = strong_tag.text.strip()
 
     # Extract links and URLs
-    for a_tag in right_pannel_div.find_all('a'):
+    urls = []
+    for a_tag in main_head_div.find_all('a'):
         link_text = a_tag.text.strip()
         link_url = a_tag['href'].strip()
         urls.append({'text': link_text, 'url': link_url})
+    # Print the extracted data
+    print("Page Heading:", page_heading)
+    print("Strong Text:", strong_text)
+    print("URLs:", urls)
+    return page_heading, strong_text, urls
 
-    # Extract the strong text
-    try:
-        strong_text = right_pannel_div.find('strong').text.strip()
-    except:
-        strong_text=None
-    return page_heading,strong_text,urls
 def home(request):
     
     urls = get_all_urls()
